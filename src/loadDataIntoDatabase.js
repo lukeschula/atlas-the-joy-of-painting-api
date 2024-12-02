@@ -5,7 +5,7 @@ const util = require("util");
 const createDBConnection = require("./dbConnection");
 
 function loadDataIntoDatabase() {
-  // Open files
+  // Open files.
   const colorsData = fs.readFileSync(
     path.join(__dirname, "../data/colors.csv"),
     "utf-8"
@@ -19,12 +19,12 @@ function loadDataIntoDatabase() {
     "utf-8"
   );
   console.log('Episodes data:', episodesData);
-  // Parse data
+  // Parse data.
   const colors = Papa.parse(colorsData, { header: true }).data;
   const episodes = Papa.parse(episodesData, { header: true }).data;
   const subjects = Papa.parse(subjectsData, { header: true }).data;
 
-  // Load colors
+  // Load colors.
   const colorNames = Object.keys(colors[0]).filter(
     (key) =>
       key !== "" &&
@@ -48,7 +48,7 @@ function loadDataIntoDatabase() {
 
   const query = util.promisify(db.query).bind(db);
 
-  // Insert the data (colors)
+  // Insert the data (colors).
   const colorPromises = colorNames.map((colorName) => {
     const sql = "INSERT INTO Colors (Color_Name) VALUES (?)";
     return query(sql, [colorName])
@@ -63,7 +63,7 @@ function loadDataIntoDatabase() {
       });
   });
 
-  // Insert the data (subjects)
+  // Insert the data (subjects).
   const subjectPromises = subjectNames.map((subjectName) => {
     const sql = "INSERT INTO Subjects (Subject_Name) VALUES (?)";
     return query(sql, [subjectName])
@@ -80,7 +80,7 @@ function loadDataIntoDatabase() {
       });
   });
 
-  // Insert data (episodes)
+  // Insert data (episodes).
 
   const episodePromises = episodes.map(async (episodeData, index) => {
     const title = episodeData.TITLE;
@@ -104,7 +104,7 @@ function loadDataIntoDatabase() {
           const resultColor = await query(sqlColorId, [colorName]);
           const colorId = resultColor[0].Color_Id;
 
-          // Insert the association into the Episode_Color table
+          // Insert the association into the Episode_Color table.
           const sqlAssociationColor =
             "INSERT INTO Episode_Color (Episode_Id, Color_Id) VALUES (?, ?)";
           await query(sqlAssociationColor, [episodeId, colorId]);
@@ -132,7 +132,7 @@ function loadDataIntoDatabase() {
         }
       });
 
-      // Wait for all color and subject association promises to resolve
+      // Wait for all color and subject association promises to resolve.
       await Promise.all([...colorPromises, ...subjectPromises]);
     } catch (error) {
       console.log(`Failed to insert episode ${title} into the database.`);
@@ -140,7 +140,7 @@ function loadDataIntoDatabase() {
     }
   });
 
-  // Wait for all promises to resolve before closing the connection
+  // Wait for all promises to resolve before closing the connection.
   Promise.all([...colorPromises, ...subjectPromises, ...episodePromises])
     .then(() => db.end())
     .catch((error) =>
